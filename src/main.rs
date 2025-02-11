@@ -1,6 +1,7 @@
 extern crate sdl2;
 
 mod constants;
+mod player;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -14,6 +15,7 @@ use constants::{
     BOTTOM_MARGIN,
     SIDE_MARGIN,
 };
+use player::Player;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -29,6 +31,8 @@ fn main() -> Result<(), String> {
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
 
+    let mut player = Player::new();
+
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -36,6 +40,30 @@ fn main() -> Result<(), String> {
                 Event::Quit { .. } |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
+                },
+                Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
+                    player.update(0, -1);
+                },
+                Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
+                    player.update(0, 1);
+                },
+                Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
+                    player.update(-1, 0);
+                },
+                Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
+                    player.update(1, 0);
+                },
+                Event::KeyDown { keycode: Some(Keycode::W), repeat: false, .. } => {
+                    player.update(0, -1);
+                },
+                Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
+                    player.update(0, 1);
+                },
+                Event::KeyDown { keycode: Some(Keycode::A), repeat: false, .. } => {
+                    player.update(-1, 0);
+                },
+                Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } => {
+                    player.update(1, 0);
                 },
                 _ => {}
             }
@@ -48,14 +76,17 @@ fn main() -> Result<(), String> {
             let x_pos = (x + SIDE_MARGIN) * TILE_SIZE;
             canvas.draw_line(
                 (x_pos as i32, (TILE_SIZE * TOP_MARGIN) as i32),
-                (x_pos as i32, (TILE_SIZE * (FIELD_HEIGHT + TOP_MARGIN)) as i32)).map_err(|e| e.to_string())?;
+                (x_pos as i32, (TILE_SIZE * (FIELD_HEIGHT + TOP_MARGIN)) as i32))?;
         }
         for y in 0..=FIELD_HEIGHT {
             let y_pos = (y + TOP_MARGIN) * TILE_SIZE;
             canvas.draw_line(
                 ((TILE_SIZE * SIDE_MARGIN) as i32, y_pos as i32),
-                ((TILE_SIZE * (FIELD_WIDTH + SIDE_MARGIN)) as i32, y_pos as i32)).map_err(|e| e.to_string())?;
+                ((TILE_SIZE * (FIELD_WIDTH + SIDE_MARGIN)) as i32, y_pos as i32))?;
         }
+
+        canvas.set_draw_color(Color::RGB(0, 255, 0));
+        canvas.fill_rect(player.get_rect())?;
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
