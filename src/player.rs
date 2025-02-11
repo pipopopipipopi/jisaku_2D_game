@@ -1,4 +1,5 @@
-use crate::constants::{ FIELD_WIDTH, FIELD_HEIGHT };
+use sdl2::rect::Rect;
+use crate::constants::{ FIELD_WIDTH, FIELD_HEIGHT, TILE_SIZE, TOP_MARGIN, SIDE_MARGIN };
 
 pub struct Player {
     pub x: i32,
@@ -21,5 +22,14 @@ impl Player {
             self.x = new_x;
             self.y = new_y;
         }
+    }
+
+    pub fn get_rect(&self) -> Rect {
+        Rect::new(
+            (self.x + SIDE_MARGIN as i32) * TILE_SIZE as i32,
+            (self.y + TOP_MARGIN as i32) * TILE_SIZE as i32,
+            TILE_SIZE,
+            TILE_SIZE,
+        )
     }
 }

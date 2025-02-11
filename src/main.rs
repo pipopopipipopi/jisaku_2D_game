@@ -87,13 +87,7 @@ fn main() -> Result<(), String> {
         }
 
         canvas.set_draw_color(Color::RGB(0, 255, 0));
-        let player_rect = Rect::new(
-            (player.x + SIDE_MARGIN as i32) * TILE_SIZE as i32,
-            (player.y + TOP_MARGIN as i32) * TILE_SIZE as i32,
-            TILE_SIZE,
-            TILE_SIZE,
-        );
-        canvas.fill_rect(player_rect)?;
+        canvas.fill_rect(player.get_rect())?;
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
