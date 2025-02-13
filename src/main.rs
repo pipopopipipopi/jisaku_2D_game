@@ -2,6 +2,7 @@ extern crate sdl2;
 
 mod constants;
 mod player;
+mod gimmicks;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -14,8 +15,15 @@ use constants::{
     TOP_MARGIN,
     BOTTOM_MARGIN,
     SIDE_MARGIN,
+    BEAM_WARNING_TIME,
+    BEAM_ACTIVE_TIME,
+    MISSILE_WARNING_TIME,
+    MISSILE_ACTIVE_TIME,
 };
 use player::Player;
+use gimmicks::beams::Beam;
+use gimmicks::shockwaves::{ShockwaveType, Shockwave};
+use gimmicks::missiles::Missile;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -32,6 +40,13 @@ fn main() -> Result<(), String> {
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
 
     let mut player = Player::new();
+    let mut beams: Vec<Beam> = vec![];
+    let mut shockwaves: Vec<Shockwave> = vec![];
+    let mut missiles: Vec<Missile> = vec![];
+    // test
+    // beams.push(Beam::new(0));
+    // shockwaves.push(Shockwave::new(ShockwaveType::Left));
+    // missiles.push(Missile::new(0, 0));
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
@@ -69,6 +84,29 @@ fn main() -> Result<(), String> {
             }
         }
 
+        for beam in &mut beams {
+            beam.update();
+            beam.check_collision(&mut player);
+        }
+        beams.retain(|beam| beam.frame_count < BEAM_WARNING_TIME + BEAM_ACTIVE_TIME);
+
+        for wave in &mut shockwaves {
+            wave.update();
+            wave.check_collision(&mut player);
+        }
+        shockwaves.retain(|wave| wave.active);
+
+        for missile in &mut missiles {
+            missile.update();
+            missile.check_collision(&mut player);
+        }
+        missiles.retain(|missile| missile.frame_count < MISSILE_WARNING_TIME + MISSILE_ACTIVE_TIME);
+
+        if !player.is_alive() {
+            println!("Game Over!");
+            break 'running;
+        }
+
         canvas.set_draw_color(Color::RGB(30, 30, 30));
         canvas.clear();
         canvas.set_draw_color(Color::RGB(150, 150, 150));
@@ -87,6 +125,21 @@ fn main() -> Result<(), String> {
 
         canvas.set_draw_color(Color::RGB(0, 255, 0));
         canvas.fill_rect(player.get_rect())?;
+
+        for beam in &beams {
+            beam.get_color(&mut canvas);
+            canvas.fill_rect(beam.get_rect())?;
+        }
+
+        for wave in &shockwaves {
+            wave.get_color(&mut canvas);
+            canvas.fill_rect(wave.get_rect())?;
+        }
+
+        for missile in &missiles {
+            missile.get_color(&mut canvas);
+            canvas.fill_rect(missile.get_rect())?;
+        }
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));

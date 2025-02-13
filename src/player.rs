@@ -4,6 +4,7 @@ use crate::constants::{ FIELD_WIDTH, FIELD_HEIGHT, TILE_SIZE, TOP_MARGIN, SIDE_M
 pub struct Player {
     pub x: i32,
     pub y: i32,
+    pub hp: u32,
 }
 
 impl Player {
@@ -11,6 +12,7 @@ impl Player {
         Self {
             x: 4,
             y: 3,
+            hp: 1,
         }
     }
 
@@ -31,5 +33,15 @@ impl Player {
             TILE_SIZE,
             TILE_SIZE,
         )
+    }
+
+    pub fn take_damage(&mut self) {
+        if self.hp > 0 {
+            self.hp -= 1;
+        }
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.hp > 0
     }
 }
