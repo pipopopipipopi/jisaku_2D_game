@@ -12,7 +12,7 @@ impl Player {
         Self {
             x: 4,
             y: 3,
-            hp: 1000,
+            hp: 1,
         }
     }
 

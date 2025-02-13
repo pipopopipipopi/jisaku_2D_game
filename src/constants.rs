@@ -9,3 +9,6 @@ pub const BEAM_WARNING_TIME: u32 = 60;
 pub const BEAM_ACTIVE_TIME: u32 = 60;
 
 pub const SHOCKWAVE_SPEED: u32 = 60;
+
+pub const MISSILE_WARNING_TIME: u32 = 60;
+pub const MISSILE_ACTIVE_TIME: u32 = 60;

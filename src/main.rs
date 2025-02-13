@@ -17,10 +17,13 @@ use constants::{
     SIDE_MARGIN,
     BEAM_WARNING_TIME,
     BEAM_ACTIVE_TIME,
+    MISSILE_WARNING_TIME,
+    MISSILE_ACTIVE_TIME,
 };
 use player::Player;
 use gimmicks::beams::Beam;
 use gimmicks::shockwaves::{ShockwaveType, Shockwave};
+use gimmicks::missiles::Missile;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -39,9 +42,11 @@ fn main() -> Result<(), String> {
     let mut player = Player::new();
     let mut beams: Vec<Beam> = vec![];
     let mut shockwaves: Vec<Shockwave> = vec![];
+    let mut missiles: Vec<Missile> = vec![];
     // test
-    beams.push(Beam::new(0));
-    shockwaves.push(Shockwave::new(ShockwaveType::Center));
+    // beams.push(Beam::new(0));
+    // shockwaves.push(Shockwave::new(ShockwaveType::Left));
+    // missiles.push(Missile::new(0, 0));
 
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
@@ -91,6 +96,12 @@ fn main() -> Result<(), String> {
         }
         shockwaves.retain(|wave| wave.active);
 
+        for missile in &mut missiles {
+            missile.update();
+            missile.check_collision(&mut player);
+        }
+        missiles.retain(|missile| missile.frame_count < MISSILE_WARNING_TIME + MISSILE_ACTIVE_TIME);
+
         if !player.is_alive() {
             println!("Game Over!");
             break 'running;
@@ -125,7 +136,10 @@ fn main() -> Result<(), String> {
             canvas.fill_rect(wave.get_rect())?;
         }
 
-        eprintln!("{:?}", player.hp);
+        for missile in &missiles {
+            missile.get_color(&mut canvas);
+            canvas.fill_rect(missile.get_rect())?;
+        }
 
         canvas.present();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
