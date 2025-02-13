@@ -3,6 +3,7 @@ extern crate sdl2;
 mod constants;
 mod player;
 mod gimmicks;
+mod scene;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -104,6 +105,7 @@ fn main() -> Result<(), String> {
 
         if !player.is_alive() {
             println!("Game Over!");
+            scene::game_over();
             break 'running;
         }
 
