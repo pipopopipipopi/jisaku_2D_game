@@ -56,28 +56,20 @@ fn main() -> Result<(), String> {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running
                 },
+                Event::KeyDown { keycode: Some(Keycode::W), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
                     player.update(0, -1);
                 },
+                Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
                     player.update(0, 1);
                 },
+                Event::KeyDown { keycode: Some(Keycode::A), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
                     player.update(-1, 0);
                 },
+                Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
-                    player.update(1, 0);
-                },
-                Event::KeyDown { keycode: Some(Keycode::W), repeat: false, .. } => {
-                    player.update(0, -1);
-                },
-                Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } => {
-                    player.update(0, 1);
-                },
-                Event::KeyDown { keycode: Some(Keycode::A), repeat: false, .. } => {
-                    player.update(-1, 0);
-                },
-                Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } => {
                     player.update(1, 0);
                 },
                 _ => {}
