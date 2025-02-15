@@ -46,17 +46,21 @@ impl Beam {
         } else if self.warning && self.frame_count < 20 {
             texture_type = 1;
         } else if self.warning && self.frame_count < 30 {
-            texture_type = 0;
-        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 10 {
             texture_type = 2;
-        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 20 {
+        } else if self.warning && self.frame_count < 40 {
+            texture_type = 1;
+        } else if self.warning && self.frame_count < 50 {
+            texture_type = 0;
+        } else if self.warning && self.frame_count < 60 {
             texture_type = 3;
-        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 30 {
+        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 10 {
             texture_type = 4;
-        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 40 {
+        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 20 {
             texture_type = 5;
-        } else {
+        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 30 {
             texture_type = 6;
+        } else if self.active && self.frame_count - BEAM_WARNING_TIME < 40 {
+            texture_type = 7;
         }
         let texture_rect = Rect::new(texture_type * 64, 64, 64, 64);
         for x in 0..FIELD_WIDTH {

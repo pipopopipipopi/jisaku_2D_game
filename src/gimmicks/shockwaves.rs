@@ -56,7 +56,7 @@ impl Shockwave {
     }
 
     pub fn draw(&self, canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(), String> {
-        let texture_rect = Rect::new(0 * 64, 5 * 64, 64, 64);
+        let texture_rect = Rect::new(0 * 64, 7 * 64, 64, 64);
         for x in self.x_range.0..=self.x_range.1 {
             let pos_rect = Rect::new(
                 (x + SIDE_MARGIN as i32) * TILE_SIZE as i32,

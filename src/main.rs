@@ -23,7 +23,7 @@ use constants::{
     MISSILE_WARNING_TIME,
     MISSILE_ACTIVE_TIME,
 };
-use player::Player;
+use player::{Direction, Player};
 use gimmicks::beams::Beam;
 use gimmicks::shockwaves::{ShockwaveType, Shockwave};
 use gimmicks::missiles::Missile;
@@ -44,15 +44,12 @@ fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
 
     let gimmicks_texture = texture_creator.load_texture("assets/gimmicks.png")?;
+    let player_texture = texture_creator.load_texture("assets/player.png")?;
     
     let mut player = Player::new();
     let mut beams: Vec<Beam> = vec![];
     let mut shockwaves: Vec<Shockwave> = vec![];
     let mut missiles: Vec<Missile> = vec![];
-    // test
-    // beams.push(Beam::new(0));
-    // shockwaves.push(Shockwave::new(ShockwaveType::Left));
-    // missiles.push(Missile::new(0, 0));
     
     let mut rng = rand::rng();
     let mut gimmick_timer = 0;
@@ -66,19 +63,19 @@ fn main() -> Result<(), String> {
                 },
                 Event::KeyDown { keycode: Some(Keycode::W), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Up), repeat: false, .. } => {
-                    player.update(0, -1);
+                    player.update(0, -1, None);
                 },
                 Event::KeyDown { keycode: Some(Keycode::S), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Down), repeat: false, .. } => {
-                    player.update(0, 1);
+                    player.update(0, 1, None);
                 },
                 Event::KeyDown { keycode: Some(Keycode::A), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Left), repeat: false, .. } => {
-                    player.update(-1, 0);
+                    player.update(-1, 0, Some(Direction::Left));
                 },
                 Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
-                    player.update(1, 0);
+                    player.update(1, 0, Some(Direction::Right));
                 },
                 _ => {}
             }
@@ -90,8 +87,16 @@ fn main() -> Result<(), String> {
 
             let gimmick = rng.random_range(0..3);
             match gimmick {
-                0 => beams.push(Beam::new(rng.random_range(0..FIELD_HEIGHT) as i32)),
-                1 => missiles.push(Missile::new(rng.random_range(0..FIELD_WIDTH - 1) as i32, rng.random_range(0..FIELD_HEIGHT - 1) as i32)),
+                0 => {
+                    for _ in 0..rng.random_range(2..4) {
+                        beams.push(Beam::new(rng.random_range(0..FIELD_HEIGHT) as i32));
+                    }
+                },
+                1 => {
+                    for _ in 0..rng.random_range(2..6) {
+                        missiles.push(Missile::new(rng.random_range(0..FIELD_WIDTH - 1) as i32, rng.random_range(0..FIELD_HEIGHT - 1) as i32));
+                    }
+                },
                 2 => {
                     let shockwave_type = match rng.random_range(0..3) {
                         0 => ShockwaveType::Center,
@@ -130,21 +135,8 @@ fn main() -> Result<(), String> {
         canvas.set_draw_color(Color::RGB(30, 30, 30));
         canvas.clear();
         let _ = field::draw(&mut canvas, &gimmicks_texture);
-        // let field_rect = Rect::new(0,0,64,64);
-        // for y in 0..FIELD_HEIGHT {
-        //     for x in 0..FIELD_WIDTH {
-        //         let rect = Rect::new(
-        //             ((x + SIDE_MARGIN) * TILE_SIZE) as i32,
-        //             ((y + TOP_MARGIN) * TILE_SIZE) as i32,
-        //             TILE_SIZE,
-        //             TILE_SIZE,
-        //         );
-        //         canvas.copy(&gimmicks_texture, field_rect, rect)?;
-        //     }
-        // }
 
-        canvas.set_draw_color(Color::RGB(0, 255, 0));
-        canvas.fill_rect(player.get_rect())?;
+        let _ = player.draw(&mut canvas, &player_texture);
 
         for beam in &beams {
             let _ = beam.draw(&mut canvas, &gimmicks_texture);
