@@ -4,6 +4,7 @@ mod constants;
 mod player;
 mod gimmicks;
 
+use rand::Rng;
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -47,7 +48,9 @@ fn main() -> Result<(), String> {
     // beams.push(Beam::new(0));
     // shockwaves.push(Shockwave::new(ShockwaveType::Left));
     // missiles.push(Missile::new(0, 0));
-
+    
+    let mut rng = rand::rng();
+    let mut gimmick_timer = 0;
     let mut event_pump = sdl_context.event_pump()?;
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -71,6 +74,26 @@ fn main() -> Result<(), String> {
                 Event::KeyDown { keycode: Some(Keycode::D), repeat: false, .. } |
                 Event::KeyDown { keycode: Some(Keycode::Right), repeat: false, .. } => {
                     player.update(1, 0);
+                },
+                _ => {}
+            }
+        }
+
+        gimmick_timer += 1;
+        if gimmick_timer >= 120 {
+            gimmick_timer = 0;
+
+            let gimmick = rng.random_range(0..3);
+            match gimmick {
+                0 => beams.push(Beam::new(rng.random_range(0..FIELD_HEIGHT) as i32)),
+                1 => missiles.push(Missile::new(rng.random_range(0..FIELD_WIDTH - 1) as i32, rng.random_range(0..FIELD_HEIGHT - 1) as i32)),
+                2 => {
+                    let shockwave_type = match rng.random_range(0..3) {
+                        0 => ShockwaveType::Center,
+                        1 => ShockwaveType::Right,
+                        _ => ShockwaveType::Left,
+                    };
+                    shockwaves.push(Shockwave::new(shockwave_type));
                 },
                 _ => {}
             }
