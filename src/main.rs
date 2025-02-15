@@ -3,11 +3,13 @@ extern crate sdl2;
 mod constants;
 mod player;
 mod gimmicks;
+mod field;
 
 use rand::Rng;
-use sdl2::pixels::Color;
 use sdl2::event::Event;
+use sdl2::image::{InitFlag, LoadTexture};
 use sdl2::keyboard::Keycode;
+use sdl2::pixels::Color;
 use std::time::Duration;
 use constants::{
     FIELD_WIDTH,
@@ -29,7 +31,7 @@ use gimmicks::missiles::Missile;
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-
+    let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
     let window_width = (FIELD_WIDTH + SIDE_MARGIN * 2) * TILE_SIZE;
     let window_height = (FIELD_HEIGHT + TOP_MARGIN + BOTTOM_MARGIN) * TILE_SIZE;
     let window = video_subsystem
@@ -39,7 +41,10 @@ fn main() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let texture_creator = canvas.texture_creator();
 
+    let gimmicks_texture = texture_creator.load_texture("assets/gimmicks.png")?;
+    
     let mut player = Player::new();
     let mut beams: Vec<Beam> = vec![];
     let mut shockwaves: Vec<Shockwave> = vec![];
@@ -124,36 +129,33 @@ fn main() -> Result<(), String> {
 
         canvas.set_draw_color(Color::RGB(30, 30, 30));
         canvas.clear();
-        canvas.set_draw_color(Color::RGB(150, 150, 150));
-        for x in 0..=FIELD_WIDTH {
-            let x_pos = (x + SIDE_MARGIN) * TILE_SIZE;
-            canvas.draw_line(
-                (x_pos as i32, (TILE_SIZE * TOP_MARGIN) as i32),
-                (x_pos as i32, (TILE_SIZE * (FIELD_HEIGHT + TOP_MARGIN)) as i32))?;
-        }
-        for y in 0..=FIELD_HEIGHT {
-            let y_pos = (y + TOP_MARGIN) * TILE_SIZE;
-            canvas.draw_line(
-                ((TILE_SIZE * SIDE_MARGIN) as i32, y_pos as i32),
-                ((TILE_SIZE * (FIELD_WIDTH + SIDE_MARGIN)) as i32, y_pos as i32))?;
-        }
+        let _ = field::draw(&mut canvas, &gimmicks_texture);
+        // let field_rect = Rect::new(0,0,64,64);
+        // for y in 0..FIELD_HEIGHT {
+        //     for x in 0..FIELD_WIDTH {
+        //         let rect = Rect::new(
+        //             ((x + SIDE_MARGIN) * TILE_SIZE) as i32,
+        //             ((y + TOP_MARGIN) * TILE_SIZE) as i32,
+        //             TILE_SIZE,
+        //             TILE_SIZE,
+        //         );
+        //         canvas.copy(&gimmicks_texture, field_rect, rect)?;
+        //     }
+        // }
 
         canvas.set_draw_color(Color::RGB(0, 255, 0));
         canvas.fill_rect(player.get_rect())?;
 
         for beam in &beams {
-            beam.get_color(&mut canvas);
-            canvas.fill_rect(beam.get_rect())?;
+            let _ = beam.draw(&mut canvas, &gimmicks_texture);
         }
 
         for wave in &shockwaves {
-            wave.get_color(&mut canvas);
-            canvas.fill_rect(wave.get_rect())?;
+            let _ = wave.draw(&mut canvas, &gimmicks_texture);
         }
 
         for missile in &missiles {
-            missile.get_color(&mut canvas);
-            canvas.fill_rect(missile.get_rect())?;
+            let _ = missile.draw(&mut canvas, &gimmicks_texture);
         }
 
         canvas.present();

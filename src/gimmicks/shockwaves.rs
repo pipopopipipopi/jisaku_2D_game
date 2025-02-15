@@ -1,7 +1,6 @@
 use sdl2::rect::Rect;
-use sdl2::render::Canvas;
+use sdl2::render::{Texture, Canvas};
 use sdl2::video::Window;
-use sdl2::pixels::Color;
 use crate::constants::{
     FIELD_HEIGHT,
     TILE_SIZE,
@@ -56,17 +55,18 @@ impl Shockwave {
         }
     }
 
-    pub fn get_rect(&self) -> Rect {
-        Rect::new(
-            (self.x_range.0 + SIDE_MARGIN as i32) * TILE_SIZE as i32,
-            (self.y + TOP_MARGIN as i32) * TILE_SIZE as i32,
-            TILE_SIZE * (self.x_range.1 - self.x_range.0 + 1) as u32,
-            TILE_SIZE,
-        )
-    }
-
-    pub fn get_color(&self, canvas: &mut Canvas<Window>) {
-        canvas.set_draw_color(Color::RGB(255, 165, 0));
+    pub fn draw(&self, canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(), String> {
+        let texture_rect = Rect::new(0 * 64, 5 * 64, 64, 64);
+        for x in self.x_range.0..=self.x_range.1 {
+            let pos_rect = Rect::new(
+                (x + SIDE_MARGIN as i32) * TILE_SIZE as i32,
+                (self.y + TOP_MARGIN as i32) * TILE_SIZE as i32,
+                TILE_SIZE,
+                TILE_SIZE,
+            );
+            canvas.copy(texture, texture_rect, pos_rect)?;
+        }
+        Ok(())
     }
 
     pub fn check_collision(&mut self, player: &mut Player) {
