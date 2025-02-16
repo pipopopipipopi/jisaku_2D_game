@@ -4,6 +4,7 @@ mod constants;
 mod player;
 mod gimmicks;
 mod field;
+mod targets;
 
 use rand::Rng;
 use sdl2::event::Event;
@@ -20,6 +21,8 @@ use constants::{
     SIDE_MARGIN,
     BEAM_WARNING_TIME,
     BEAM_ACTIVE_TIME,
+    SHOCKWAVE_WARNING_TIME,
+    SHOCKWAVE_SPEED,
     MISSILE_WARNING_TIME,
     MISSILE_ACTIVE_TIME,
 };
@@ -27,6 +30,7 @@ use player::{Direction, Player};
 use gimmicks::beams::Beam;
 use gimmicks::shockwaves::{ShockwaveType, Shockwave};
 use gimmicks::missiles::Missile;
+use targets::Target;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -50,6 +54,7 @@ fn main() -> Result<(), String> {
     let mut beams: Vec<Beam> = vec![];
     let mut shockwaves: Vec<Shockwave> = vec![];
     let mut missiles: Vec<Missile> = vec![];
+    let mut target = Target::new();
     
     let mut rng = rand::rng();
     let mut gimmick_timer = 0;
@@ -84,16 +89,15 @@ fn main() -> Result<(), String> {
         gimmick_timer += 1;
         if gimmick_timer >= 120 {
             gimmick_timer = 0;
-
             let gimmick = rng.random_range(0..3);
             match gimmick {
                 0 => {
-                    for _ in 0..rng.random_range(2..4) {
+                    for _ in 0..rng.random_range(2..=3) {
                         beams.push(Beam::new(rng.random_range(0..FIELD_HEIGHT) as i32));
                     }
                 },
                 1 => {
-                    for _ in 0..rng.random_range(2..6) {
+                    for _ in 0..rng.random_range(4..=8) {
                         missiles.push(Missile::new(rng.random_range(0..FIELD_WIDTH - 1) as i32, rng.random_range(0..FIELD_HEIGHT - 1) as i32));
                     }
                 },
@@ -109,6 +113,9 @@ fn main() -> Result<(), String> {
             }
         }
 
+        target.check_collision(&player);
+        println!("{}", target.count);
+
         for beam in &mut beams {
             beam.update();
             beam.check_collision(&mut player);
@@ -119,13 +126,18 @@ fn main() -> Result<(), String> {
             wave.update();
             wave.check_collision(&mut player);
         }
-        shockwaves.retain(|wave| wave.active);
+        shockwaves.retain(|wave| wave.frame_count < SHOCKWAVE_WARNING_TIME + SHOCKWAVE_SPEED * FIELD_HEIGHT);
 
         for missile in &mut missiles {
             missile.update();
             missile.check_collision(&mut player);
         }
         missiles.retain(|missile| missile.frame_count < MISSILE_WARNING_TIME + MISSILE_ACTIVE_TIME);
+
+        if target.count == 5 {
+            println!("Game Clear");
+            break 'running;
+        }
 
         if !player.is_alive() {
             println!("Game Over!");
@@ -134,8 +146,12 @@ fn main() -> Result<(), String> {
 
         canvas.set_draw_color(Color::RGB(30, 30, 30));
         canvas.clear();
-        let _ = field::draw(&mut canvas, &gimmicks_texture);
+        let _ = field::field_draw(&mut canvas, &gimmicks_texture);
+        let _ = field::beam_draw(&mut canvas, &gimmicks_texture, gimmick_timer);
+        let _ = field::shockwave_draw(&mut canvas, &gimmicks_texture);
+        let _ = field::screen_draw(&mut canvas, &gimmicks_texture);
 
+        let _ = target.draw(&mut canvas, &gimmicks_texture);
         let _ = player.draw(&mut canvas, &player_texture);
 
         for beam in &beams {
