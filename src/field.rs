@@ -160,9 +160,9 @@ pub fn screen_draw(
 
     let target_rect = Rect::new(
         ((FIELD_WIDTH + SIDE_MARGIN) * TILE_SIZE) as i32 / 3,
-        30,
+        28,
         TILE_SIZE * 4,
-        TILE_SIZE * 2 - 30,
+        TILE_SIZE * 2 - 34,
     );
 
     canvas.copy(&texture, None, target_rect)?;
