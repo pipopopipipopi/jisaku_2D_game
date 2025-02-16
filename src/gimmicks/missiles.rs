@@ -1,6 +1,5 @@
 use sdl2::rect::Rect;
-use sdl2::render::Canvas;
-use sdl2::pixels::Color;
+use sdl2::render::{Texture, Canvas};
 use sdl2::video::Window;
 use crate::constants::{
     TILE_SIZE,
@@ -41,23 +40,30 @@ impl Missile {
         }
     }
 
-    pub fn get_rect(&self) -> Rect {
-        Rect::new(
+    pub fn draw(&self, canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(), String> {
+        let mut texture_type = (0, 0);
+        if self.warning {
+            texture_type = (0, 3);
+        } else if self.active && self.frame_count - MISSILE_WARNING_TIME < 7 {
+            texture_type = (2, 3);
+        } else if self.active && self.frame_count - MISSILE_WARNING_TIME < 17 {
+            texture_type = (4, 3);
+        } else if self.active && self.frame_count - MISSILE_WARNING_TIME < 25 {
+            texture_type = (0, 5);
+        } else if self.active && self.frame_count - MISSILE_WARNING_TIME < 33 {
+            texture_type = (2, 5)
+        } else if self.active && self.frame_count - MISSILE_WARNING_TIME < 40 {
+            texture_type = (4, 5)
+        }
+        let texture_rect = Rect::new(texture_type.0 * 64, texture_type.1 * 64, 128, 128);
+        let pos_rect = Rect::new(
             (self.x + SIDE_MARGIN as i32) * TILE_SIZE as i32,
             (self.y + TOP_MARGIN as i32) * TILE_SIZE as i32,
             TILE_SIZE * 2,
             TILE_SIZE * 2,
-        )
-    }
-
-    pub fn get_color(&self, canvas: &mut Canvas<Window>) {
-        if self.warning {
-            canvas.set_draw_color(Color::RGB(0, 255, 0));
-        } else if self.active {
-            canvas.set_draw_color(Color::RGB(255, 255, 0));
-        } else {
-            return;
-        }
+        );
+        canvas.copy(texture, texture_rect, pos_rect)?;
+        Ok(())
     }
 
     pub fn check_collision(&mut self, player: &mut Player) {
