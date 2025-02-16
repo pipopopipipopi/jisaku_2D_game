@@ -2,7 +2,14 @@ use rand::Rng;
 use sdl2::rect::Rect;
 use sdl2::render::{Texture, Canvas};
 use sdl2::video::Window;
-use crate::constants::{ FIELD_WIDTH, FIELD_HEIGHT, TILE_SIZE, TOP_MARGIN, SIDE_MARGIN };
+use crate::constants::{
+    FIELD_WIDTH,
+    FIELD_HEIGHT,
+    TILE_SIZE,
+    TOP_MARGIN,
+    SIDE_MARGIN,
+    CLEAR,
+};
 use crate::player::Player;
 
 pub struct Target {
@@ -21,6 +28,11 @@ impl Target {
     }
 
     pub fn update(&mut self) {
+        if self.count == CLEAR {
+            self.x = -100;
+            self.y = -100;
+            return;
+        }
         let mut rng = rand::rng();
         let new_x = match (self.x >= 3, self.x + 3 < FIELD_WIDTH as i32) {
             (true, true) => {
