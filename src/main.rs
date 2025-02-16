@@ -5,6 +5,7 @@ mod player;
 mod gimmicks;
 mod field;
 mod targets;
+mod scenes;
 
 use rand::Rng;
 use sdl2::event::Event;
@@ -25,6 +26,7 @@ use constants::{
     SHOCKWAVE_SPEED,
     MISSILE_WARNING_TIME,
     MISSILE_ACTIVE_TIME,
+    CLEAR,
 };
 use player::{Direction, Player};
 use gimmicks::beams::Beam;
@@ -36,6 +38,7 @@ fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
+    let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
     let window_width = (FIELD_WIDTH + SIDE_MARGIN * 2) * TILE_SIZE;
     let window_height = (FIELD_HEIGHT + TOP_MARGIN + BOTTOM_MARGIN) * TILE_SIZE;
     let window = video_subsystem
@@ -46,6 +49,8 @@ fn main() -> Result<(), String> {
 
     let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
     let texture_creator = canvas.texture_creator();
+
+    let font = ttf_context.load_font("assets/PressStart2P.ttf", 128)?;
 
     let gimmicks_texture = texture_creator.load_texture("assets/gimmicks.png")?;
     let player_texture = texture_creator.load_texture("assets/player.png")?;
@@ -134,7 +139,7 @@ fn main() -> Result<(), String> {
         }
         missiles.retain(|missile| missile.frame_count < MISSILE_WARNING_TIME + MISSILE_ACTIVE_TIME);
 
-        if target.count == 5 {
+        if target.count == CLEAR {
             println!("Game Clear");
             break 'running;
         }
@@ -149,7 +154,7 @@ fn main() -> Result<(), String> {
         let _ = field::field_draw(&mut canvas, &gimmicks_texture);
         let _ = field::beam_draw(&mut canvas, &gimmicks_texture, gimmick_timer);
         let _ = field::shockwave_draw(&mut canvas, &gimmicks_texture);
-        let _ = field::screen_draw(&mut canvas, &gimmicks_texture);
+        let _ = field::screen_draw(&mut canvas, &gimmicks_texture, &texture_creator, &font, target.count);
 
         let _ = target.draw(&mut canvas, &gimmicks_texture);
         let _ = player.draw(&mut canvas, &player_texture);

@@ -1,7 +1,16 @@
 use sdl2::rect::Rect;
-use sdl2::render::{Texture, Canvas};
+use sdl2::render::{Texture, TextureCreator, Canvas};
 use sdl2::video::Window;
-use crate::constants::{FIELD_WIDTH, FIELD_HEIGHT, TILE_SIZE, TOP_MARGIN, SIDE_MARGIN};
+use sdl2::ttf::Font;
+use sdl2::pixels::Color;
+use crate::constants::{
+    FIELD_WIDTH,
+    FIELD_HEIGHT,
+    TILE_SIZE,
+    TOP_MARGIN,
+    SIDE_MARGIN,
+    CLEAR,
+};
 
 pub fn field_draw(canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(), String> {
     let field_rect = Rect::new(0, 0, 64, 64);
@@ -100,7 +109,13 @@ pub fn shockwave_draw(canvas: &mut Canvas<Window>, texture: &Texture) -> Result<
     Ok(())
 }
 
-pub fn screen_draw(canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(), String> {
+pub fn screen_draw(
+    canvas: &mut Canvas<Window>,
+    texture: &Texture,
+    texture_creator: &TextureCreator<sdl2::video::WindowContext>,
+    font: &Font,
+    count: u32,
+) -> Result<(), String> {
     let screen_rect = Rect::new(0, 8 * 64, 64, 2 * 64);
     let pos_rect = Rect::new(
         0,
@@ -109,6 +124,7 @@ pub fn screen_draw(canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(),
         TILE_SIZE * 2,
     );
     canvas.copy(texture, screen_rect, pos_rect)?;
+
     let screen_rect = Rect::new(64, 8 * 64, 64, 2 * 64);
     for x in 0..FIELD_WIDTH {
         let pos_rect = Rect::new(
@@ -119,6 +135,7 @@ pub fn screen_draw(canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(),
         );
         canvas.copy(texture, screen_rect, pos_rect)?;
     }
+
     let screen_rect = Rect::new(2 * 64, 8 * 64, 64, 2 * 64);
     let pos_rect = Rect::new(
         ((FIELD_WIDTH + 1) * TILE_SIZE) as i32,
@@ -127,5 +144,28 @@ pub fn screen_draw(canvas: &mut Canvas<Window>, texture: &Texture) -> Result<(),
         TILE_SIZE * 2,
     );
     canvas.copy(texture, screen_rect, pos_rect)?;
+
+    let text = if count < CLEAR {
+        format!("{}/10", count)
+    } else {
+        "GAME CLEAR".to_string()
+    };
+
+    let surface = font.render(&text)
+        .blended(Color::RGB(255, 255, 255))
+        .map_err(|e| e.to_string())?;
+    
+    let texture = texture_creator.create_texture_from_surface(&surface)
+        .map_err(|e| e.to_string())?;
+
+    let target_rect = Rect::new(
+        ((FIELD_WIDTH + SIDE_MARGIN) * TILE_SIZE) as i32 / 3,
+        18,
+        TILE_SIZE * 4,
+        TILE_SIZE * 2 - 20,
+    );
+
+    canvas.copy(&texture, None, target_rect)?;
+
     Ok(())
 }
