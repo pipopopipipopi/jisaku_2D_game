@@ -94,7 +94,7 @@ impl Shockwave {
     }
 
     pub fn check_collision(&mut self, player: &mut Player) {
-        if self.y != player.y {
+        if self.y != player.y || !self.active {
             return;
         }
         let index = (player.x - self.x_range.0) as usize;
